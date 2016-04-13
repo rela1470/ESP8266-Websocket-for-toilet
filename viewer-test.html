@@ -1,0 +1,47 @@
+<html>
+<head>
+</head>
+<body>
+  <h1>Toilet System Test Mode</h1><br/>
+  commands)<br/>
+  NAME STATUS MINUTES<br/>
+  or<br/>
+  getState<br/>
+  sample)<br/>
+  6F_man empty 30<br/>
+  6F_man full 1<br/>
+
+  <input type="text" id="text" value="getState"/>
+  <input type="button" id="button" value="Send" />
+  <div id="msg-area">
+
+  </div>
+  <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+  <script>
+    var conn = new WebSocket('ws://echo.websocket.org');
+    var msg_area = $('#msg-area');
+
+    conn.onopen = function(e) {
+      console.log("Connection established!");
+    };
+
+    $('#button').click(function(){
+      var msg = $('#text').val();
+      $('#text').val("");
+      //相手に送信
+      conn.send(msg);
+      //自分の投稿した内容をmsg_areaに追記
+      msg_area.append(warpMessage(msg));
+    });
+
+    conn.onmessage = function(e) {
+      //相手が投稿した内容をmsg_areaに追記
+      msg_area.append(warpMessage(e.data));
+    };
+
+    function warpMessage(msg){
+      return '<p>' + msg + '</p>';
+    }
+  </script>
+</body>
+</html>
