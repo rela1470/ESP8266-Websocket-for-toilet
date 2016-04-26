@@ -14,8 +14,13 @@
 const int DOOR_NAME_MAX = 10;
 const int DOOR_MAX      = 4;
 char DOOR_NAME[DOOR_MAX][DOOR_NAME_MAX] = {"6F_man", "6F_woman", "7F_man", "7F_woman"};
-int DOOR_PORT[DOOR_MAX] = {-1, -1, 14, 12}; //-1 empty
 int LED_PORT[DOOR_MAX]  = {3, 4, 1, 5}; //-1 empty
+
+//int DOOR_PORT[DOOR_MAX] = {12, 14, -1, -1}; //6F
+int DOOR_PORT[DOOR_MAX] = {-1, -1, 12, 14}; //7F
+//int DOOR_PORT[DOOR_MAX] = {-1, -1, -1, -1}; //個人
+
+char* NAME = "7F";
 
 char* WEBSOCKET_PATH = "/";
 char* WEBSOCKET_HOST = "echo.websocket.org";
@@ -28,6 +33,7 @@ char DOOR_STATUS_NAME[2][6] = {"full", "empty"};
 int doorState[DOOR_MAX];
 unsigned long doorTimer[DOOR_MAX];
 WebSocketClient webSocketClient;
+unsigned long keepAlive = 0;
 
 // Use WiFiClient class to create TCP connections
 WiFiClient client;
@@ -60,6 +66,7 @@ void setup() {
   Serial.print("Connecting to ");
   Serial.println(WIFI_SSID);
   
+  WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   
   while (WiFi.status() != WL_CONNECTED) {
@@ -88,6 +95,7 @@ void setup() {
   webSocketClient.host = WEBSOCKET_HOST;
   if (webSocketClient.handshake(client)) {
     Serial.println("Handshake successful");
+    webSocketClient.sendData("Handshake:" + String(NAME));
   }
   else {
     Serial.println("Handshake failed.");
@@ -99,6 +107,7 @@ void setup() {
     if (DOOR_PORT[i] >= 0) pinMode(DOOR_PORT[i], INPUT_PULLUP);
     if (LED_PORT[i]  >= 0) pinMode(LED_PORT[i],  OUTPUT);
   }
+  keepAlive = millis();
 }
 
 int getMin(unsigned long now = 0)
@@ -146,6 +155,13 @@ void loop() {
         }
       }
     }
+
+    if (millis() - keepAlive  >= (15 * 60000)) {
+      keepAlive = millis();
+      Serial.println("keepAlive");
+      webSocketClient.sendData("keepAlive:" + String(NAME));
+    }
+    
   }
   else {
     Serial.println("Client disconnected.");

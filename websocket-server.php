@@ -38,7 +38,7 @@
               if (! isset($this->statusArray[$msgArray[0]]) || $this->statusArray[$msgArray[0]]['state'] != $msgArray[1]) {
                   echo "[changed]:{$msgArray[0]} {$msgArray[1]} {$msgArray[2]}\n";
                   $diff = (isset($this->statusArray[$msgArray[0]]['time'])) ? time() - $this->statusArray[$msgArray[0]]['time'] : 0;
-                  $log = json_encode(['name' => $msgArray[0], 'status' => $msgArray[1], 'diff' => $diff]);
+                  $log = json_encode(['name' => $msgArray[0], 'status' => ($msgArray[1] == 'empty') ? 'full' : 'empty', 'diff' => $diff]);
                   file_put_contents("/var/log/toilet.log", "{$log}\n", FILE_APPEND);
                   $this->statusArray[$msgArray[0]] = ['state' => $msgArray[1], 'time' => time()];
                 }
